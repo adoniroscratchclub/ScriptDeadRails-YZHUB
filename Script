@@ -1,4 +1,4 @@
--- YZHUB: AUTO FIM + FLY + INVISIBILIDADE + POSIÇÃO
+-- YZHUB: AUTO FIM (posição fixa) + FLY + INVISIBILIDADE + POSIÇÃO
 local player = game.Players.LocalPlayer
 local char = player.Character or player.CharacterAdded:Wait()
 local root = char:WaitForChild("HumanoidRootPart")
@@ -6,14 +6,14 @@ local root = char:WaitForChild("HumanoidRootPart")
 -- Criar GUI
 local gui = Instance.new("ScreenGui", game.CoreGui)
 local frame = Instance.new("Frame", gui)
-frame.Size = UDim2.new(0, 150, 0, 240) -- altura aumentada pra 4 botões
+frame.Size = UDim2.new(0, 150, 0, 240) -- altura para 4 botões
 frame.Position = UDim2.new(0, 20, 0, 100)
 frame.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
 frame.BorderSizePixel = 0
 frame.Active = true
 frame.Draggable = true
 
--- Botão AUTO FIM
+-- Botão AUTO FIM (teleportar para posição fixa)
 local btn1 = Instance.new("TextButton", frame)
 btn1.Size = UDim2.new(1, 0, 0.25, 0)
 btn1.Position = UDim2.new(0, 0, 0, 0)
@@ -24,7 +24,7 @@ btn1.Font = Enum.Font.SourceSansBold
 btn1.TextSize = 20
 
 btn1.MouseButton1Click:Connect(function()
-    root.CFrame = root.CFrame + root.CFrame.lookVector * 500
+    root.CFrame = CFrame.new(424.4, 27.5, 490040.5)
 end)
 
 -- Botão FLY
