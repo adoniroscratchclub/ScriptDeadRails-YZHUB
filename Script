@@ -1,63 +1,142 @@
--- YZHub | Clonado e estilizado por Yuri 😎
--- Interface personalizada + funcionalidades populares do NatHub
+-- YZHub Finalizado 💠 Interface com minimizar/maximizar e draggable
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+local Mouse = LocalPlayer:GetMouse()
 
-local ScreenGui = Instance.new("ScreenGui")
-local MainFrame = Instance.new("Frame")
-local Title = Instance.new("TextLabel")
-local AutoWinButton = Instance.new("TextButton")
-local AimbotButton = Instance.new("TextButton")
-
--- Configuração básica da GUI
+local ScreenGui = Instance.new("ScreenGui", game.CoreGui)
 ScreenGui.Name = "YZHub"
-ScreenGui.Parent = game.CoreGui
 
-MainFrame.Name = "MainFrame"
-MainFrame.Parent = ScreenGui
-MainFrame.BackgroundColor3 = Color3.fromRGB(10, 10, 10)
+local MainFrame = Instance.new("Frame", ScreenGui)
+MainFrame.Size = UDim2.new(0, 350, 0, 260)
 MainFrame.Position = UDim2.new(0.3, 0, 0.3, 0)
-MainFrame.Size = UDim2.new(0, 320, 0, 220)
+MainFrame.BackgroundColor3 = Color3.fromRGB(10, 10, 10)
 MainFrame.BorderSizePixel = 0
+MainFrame.Active = true
+MainFrame.Draggable = true
 
-Title.Name = "Title"
-Title.Parent = MainFrame
+local Title = Instance.new("TextLabel", MainFrame)
+Title.Size = UDim2.new(1, -60, 0, 40)
 Title.BackgroundColor3 = Color3.fromRGB(0, 170, 255)
-Title.Size = UDim2.new(1, 0, 0, 40)
 Title.Font = Enum.Font.GothamBold
 Title.Text = "YZHub - Dead Rails"
-Title.TextColor3 = Color3.fromRGB(255, 255, 255)
+Title.TextColor3 = Color3.new(1, 1, 1)
 Title.TextSize = 24
+Title.Position = UDim2.new(0, 0, 0, 0)
 
--- Botão Auto Win
-AutoWinButton.Name = "AutoWin"
-AutoWinButton.Parent = MainFrame
-AutoWinButton.BackgroundColor3 = Color3.fromRGB(0, 170, 255)
-AutoWinButton.Position = UDim2.new(0.1, 0, 0.3, 0)
-AutoWinButton.Size = UDim2.new(0, 120, 0, 40)
-AutoWinButton.Font = Enum.Font.Gotham
-AutoWinButton.Text = "Auto Win"
-AutoWinButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-AutoWinButton.TextSize = 16
-AutoWinButton.MouseButton1Click:Connect(function()
-    -- Exemplo de funcionalidade
-    for _, v in pairs(workspace:GetDescendants()) do
-        if v:IsA("TouchTransmitter") and v.Parent then
-            firetouchinterest(game.Players.LocalPlayer.Character.HumanoidRootPart, v.Parent, 0)
-            firetouchinterest(game.Players.LocalPlayer.Character.HumanoidRootPart, v.Parent, 1)
-        end
-    end
+-- Botão Minimizar
+local MinimizeBtn = Instance.new("TextButton", MainFrame)
+MinimizeBtn.Size = UDim2.new(0, 30, 0, 30)
+MinimizeBtn.Position = UDim2.new(1, -55, 0, 5)
+MinimizeBtn.BackgroundColor3 = Color3.fromRGB(0, 170, 255)
+MinimizeBtn.Font = Enum.Font.GothamBold
+MinimizeBtn.Text = "-"
+MinimizeBtn.TextSize = 20
+MinimizeBtn.TextColor3 = Color3.new(1,1,1)
+
+-- Botão Maximizar (começa invisível)
+local MaximizeBtn = Instance.new("TextButton", ScreenGui)
+MaximizeBtn.Size = UDim2.new(0, 100, 0, 30)
+MaximizeBtn.Position = UDim2.new(0.3, 0, 0.3, 0)
+MaximizeBtn.BackgroundColor3 = Color3.fromRGB(0, 170, 255)
+MaximizeBtn.Font = Enum.Font.GothamBold
+MaximizeBtn.Text = "+ YZHub"
+MaximizeBtn.TextSize = 20
+MaximizeBtn.TextColor3 = Color3.new(1,1,1)
+MaximizeBtn.Visible = false
+
+-- Função para criar botões internos
+local function CreateButton(text, position, callback)
+	local btn = Instance.new("TextButton", MainFrame)
+	btn.Size = UDim2.new(0, 140, 0, 40)
+	btn.Position = position
+	btn.BackgroundColor3 = Color3.fromRGB(0, 170, 255)
+	btn.Font = Enum.Font.GothamBold
+	btn.Text = text
+	btn.TextColor3 = Color3.new(1, 1, 1)
+	btn.TextSize = 16
+	btn.MouseButton1Click:Connect(callback)
+	return btn
+end
+
+-- Funções
+local flying = false
+local function flyFunc()
+	flying = not flying
+	local char = LocalPlayer.Character
+	local hrp = char:FindFirstChild("HumanoidRootPart")
+
+	local bv = Instance.new("BodyVelocity")
+	bv.Velocity = Vector3.new(0, 0, 0)
+	bv.MaxForce = Vector3.new(400000, 400000, 400000)
+	bv.Parent = hrp
+
+	while flying and hrp and hrp.Parent do
+		wait()
+		bv.Velocity = (Mouse.Hit.Position - hrp.Position).Unit * 80
+	end
+
+	bv:Destroy()
+end
+
+local function invisibleFunc()
+	for _, part in pairs(LocalPlayer.Character:GetDescendants()) do
+		if part:IsA("BasePart") and part.Name ~= "HumanoidRootPart" then
+			part.Transparency = 1
+		elseif part:IsA("Decal") then
+			part.Transparency = 1
+		end
+	end
+end
+
+local function autoEndFunc()
+	for _, obj in pairs(workspace:GetDescendants()) do
+		if obj:IsA("TouchTransmitter") then
+			firetouchinterest(LocalPlayer.Character.HumanoidRootPart, obj.Parent, 0)
+			firetouchinterest(LocalPlayer.Character.HumanoidRootPart, obj.Parent, 1)
+		end
+	end
+end
+
+local function aimbotFunc()
+	local camera = workspace.CurrentCamera
+	local closest, dist = nil, math.huge
+	for _, player in pairs(Players:GetPlayers()) do
+		if player ~= LocalPlayer and player.Character and player.Character:FindFirstChild("Head") then
+			local headPos = player.Character.Head.Position
+			local screenPos = camera:WorldToViewportPoint(headPos)
+			local mag = (Vector2.new(Mouse.X, Mouse.Y) - Vector2.new(screenPos.X, screenPos.Y)).magnitude
+			if mag < dist then
+				dist = mag
+				closest = player
+			end
+		end
+	end
+	if closest and closest.Character:FindFirstChild("Head") then
+		camera.CFrame = CFrame.new(camera.CFrame.Position, closest.Character.Head.Position)
+	end
+end
+
+-- Botões de funcionalidade
+local btn1 = CreateButton("FLY (F)", UDim2.new(0.1, 0, 0.25, 0), flyFunc)
+local btn2 = CreateButton("Invisível", UDim2.new(0.1, 0, 0.45, 0), invisibleFunc)
+local btn3 = CreateButton("Auto End", UDim2.new(0.55, 0, 0.25, 0), autoEndFunc)
+local btn4 = CreateButton("Aimbot", UDim2.new(0.55, 0, 0.45, 0), aimbotFunc)
+
+-- Minimizar
+MinimizeBtn.MouseButton1Click:Connect(function()
+	MainFrame.Visible = false
+	MaximizeBtn.Visible = true
 end)
 
--- Botão Aimbot (simples)
-AimbotButton.Name = "Aimbot"
-AimbotButton.Parent = MainFrame
-AimbotButton.BackgroundColor3 = Color3.fromRGB(0, 170, 255)
-AimbotButton.Position = UDim2.new(0.5, 10, 0.3, 0)
-AimbotButton.Size = UDim2.new(0, 120, 0, 40)
-AimbotButton.Font = Enum.Font.Gotham
-AimbotButton.Text = "Aimbot"
-AimbotButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-AimbotButton.TextSize = 16
-AimbotButton.MouseButton1Click:Connect(function()
-    print("Aimbot ativado (placeholder)")
-    -- Aimbot real exigiria hooks e lógica de alvo
+-- Maximizar
+MaximizeBtn.MouseButton1Click:Connect(function()
+	MainFrame.Visible = true
+	MaximizeBtn.Visible = false
+end)
+
+-- Tecla F = Ativa o Fly
+Mouse.KeyDown:Connect(function(k)
+	if k:lower() == "f" then
+		flyFunc()
+	end
 end)
