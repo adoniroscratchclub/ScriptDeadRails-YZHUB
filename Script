@@ -1,4 +1,4 @@
--- YZHUB: AUTO FIM (posição fixa) + FLY + INVISIBILIDADE + POSIÇÃO
+-- YZHUB: AUTO FIM + FLY + INVISIBILIDADE + POSIÇÃO (sem retorno automático)
 local player = game.Players.LocalPlayer
 local char = player.Character or player.CharacterAdded:Wait()
 local root = char:WaitForChild("HumanoidRootPart")
@@ -24,10 +24,10 @@ btn1.Font = Enum.Font.SourceSansBold
 btn1.TextSize = 20
 
 btn1.MouseButton1Click:Connect(function()
-    root.CFrame = CFrame.new(424.4, 27.5, 490040.5)
+    root.CFrame = CFrame.new(424.4, 27.5, 49040.5)
 end)
 
--- Botão FLY
+-- Botão FLY (liga/desliga fly, sem retorno)
 local btn2 = Instance.new("TextButton", frame)
 btn2.Size = UDim2.new(1, 0, 0.25, 0)
 btn2.Position = UDim2.new(0, 0, 0.25, 0)
@@ -39,29 +39,32 @@ btn2.TextSize = 20
 
 local flying = false
 local speed = 300 -- velocidade turbo
+local bodyGyro, bodyVelocity
+local flyConnection
 
 btn2.MouseButton1Click:Connect(function()
     flying = not flying
     btn2.Text = flying and "FLY: ON" or "FLY: OFF"
 
-    local bodyGyro = Instance.new("BodyGyro", root)
-    bodyGyro.P = 9e4
-    bodyGyro.maxTorque = Vector3.new(9e9, 9e9, 9e9)
-    bodyGyro.cframe = root.CFrame
+    if flying then
+        bodyGyro = Instance.new("BodyGyro", root)
+        bodyGyro.P = 9e4
+        bodyGyro.maxTorque = Vector3.new(9e9, 9e9, 9e9)
+        bodyGyro.cframe = root.CFrame
 
-    local bodyVelocity = Instance.new("BodyVelocity", root)
-    bodyVelocity.velocity = Vector3.new(0, 0, 0)
-    bodyVelocity.maxForce = Vector3.new(9e9, 9e9, 9e9)
+        bodyVelocity = Instance.new("BodyVelocity", root)
+        bodyVelocity.velocity = Vector3.new(0, 0, 0)
+        bodyVelocity.maxForce = Vector3.new(9e9, 9e9, 9e9)
 
-    spawn(function()
-        while flying do
-            task.wait()
+        flyConnection = game:GetService("RunService").RenderStepped:Connect(function()
             bodyGyro.cframe = workspace.CurrentCamera.CFrame
             bodyVelocity.velocity = workspace.CurrentCamera.CFrame.lookVector * speed
-        end
-        bodyGyro:Destroy()
-        bodyVelocity:Destroy()
-    end)
+        end)
+    else
+        if flyConnection then flyConnection:Disconnect() end
+        if bodyGyro then bodyGyro:Destroy() end
+        if bodyVelocity then bodyVelocity:Destroy() end
+    end
 end)
 
 -- Botão INVISIBILIDADE
@@ -122,7 +125,6 @@ btn4.MouseButton1Click:Connect(function()
         posLabel.TextSize = 18
         posLabel.Text = "Posição: Loading..."
 
-        -- Atualizar posição a cada frame
         local conn
         conn = game:GetService("RunService").RenderStepped:Connect(function()
             if not showingPos then
