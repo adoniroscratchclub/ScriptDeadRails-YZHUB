@@ -1,142 +1,137 @@
--- YZHub Finalizado 💠 Interface com minimizar/maximizar e draggable
-local Players = game:GetService("Players")
-local LocalPlayer = Players.LocalPlayer
-local Mouse = LocalPlayer:GetMouse()
+-- YZHUB Script para Dead Rails (Exemplo básico)
 
-local ScreenGui = Instance.new("ScreenGui", game.CoreGui)
-ScreenGui.Name = "YZHub"
+-- Criação da GUI
+local ScreenGui = Instance.new("ScreenGui")
+ScreenGui.Name = "YZHUB"
+ScreenGui.Parent = game:GetService("CoreGui")
 
-local MainFrame = Instance.new("Frame", ScreenGui)
-MainFrame.Size = UDim2.new(0, 350, 0, 260)
-MainFrame.Position = UDim2.new(0.3, 0, 0.3, 0)
-MainFrame.BackgroundColor3 = Color3.fromRGB(10, 10, 10)
-MainFrame.BorderSizePixel = 0
-MainFrame.Active = true
-MainFrame.Draggable = true
+local mainFrame = Instance.new("Frame")
+mainFrame.Size = UDim2.new(0, 300, 0, 400)
+mainFrame.Position = UDim2.new(0.05, 0, 0.2, 0)
+mainFrame.BackgroundColor3 = Color3.fromRGB(15, 30, 60) -- azul escuro
+mainFrame.BorderSizePixel = 0
+mainFrame.Parent = ScreenGui
 
-local Title = Instance.new("TextLabel", MainFrame)
-Title.Size = UDim2.new(1, -60, 0, 40)
-Title.BackgroundColor3 = Color3.fromRGB(0, 170, 255)
-Title.Font = Enum.Font.GothamBold
-Title.Text = "YZHub - Dead Rails"
-Title.TextColor3 = Color3.new(1, 1, 1)
-Title.TextSize = 24
-Title.Position = UDim2.new(0, 0, 0, 0)
+-- Título
+local title = Instance.new("TextLabel")
+title.Size = UDim2.new(1, 0, 0, 40)
+title.BackgroundTransparency = 1
+title.Text = "YZHUB - Dead Rails"
+title.TextColor3 = Color3.fromRGB(0, 170, 255) -- azul claro
+title.Font = Enum.Font.GothamBold
+title.TextSize = 24
+title.Parent = mainFrame
 
--- Botão Minimizar
-local MinimizeBtn = Instance.new("TextButton", MainFrame)
-MinimizeBtn.Size = UDim2.new(0, 30, 0, 30)
-MinimizeBtn.Position = UDim2.new(1, -55, 0, 5)
-MinimizeBtn.BackgroundColor3 = Color3.fromRGB(0, 170, 255)
-MinimizeBtn.Font = Enum.Font.GothamBold
-MinimizeBtn.Text = "-"
-MinimizeBtn.TextSize = 20
-MinimizeBtn.TextColor3 = Color3.new(1,1,1)
-
--- Botão Maximizar (começa invisível)
-local MaximizeBtn = Instance.new("TextButton", ScreenGui)
-MaximizeBtn.Size = UDim2.new(0, 100, 0, 30)
-MaximizeBtn.Position = UDim2.new(0.3, 0, 0.3, 0)
-MaximizeBtn.BackgroundColor3 = Color3.fromRGB(0, 170, 255)
-MaximizeBtn.Font = Enum.Font.GothamBold
-MaximizeBtn.Text = "+ YZHub"
-MaximizeBtn.TextSize = 20
-MaximizeBtn.TextColor3 = Color3.new(1,1,1)
-MaximizeBtn.Visible = false
-
--- Função para criar botões internos
-local function CreateButton(text, position, callback)
-	local btn = Instance.new("TextButton", MainFrame)
-	btn.Size = UDim2.new(0, 140, 0, 40)
-	btn.Position = position
-	btn.BackgroundColor3 = Color3.fromRGB(0, 170, 255)
-	btn.Font = Enum.Font.GothamBold
-	btn.Text = text
-	btn.TextColor3 = Color3.new(1, 1, 1)
-	btn.TextSize = 16
-	btn.MouseButton1Click:Connect(callback)
-	return btn
+-- Função para criar botões
+local function createButton(text, posY)
+    local btn = Instance.new("TextButton")
+    btn.Size = UDim2.new(0.9, 0, 0, 40)
+    btn.Position = UDim2.new(0.05, 0, 0, posY)
+    btn.BackgroundColor3 = Color3.fromRGB(0, 120, 255)
+    btn.TextColor3 = Color3.fromRGB(255, 255, 255)
+    btn.Font = Enum.Font.GothamBold
+    btn.TextSize = 20
+    btn.Text = text
+    btn.Parent = mainFrame
+    btn.AutoButtonColor = true
+    return btn
 end
 
--- Funções
+-- Variáveis globais
+local player = game.Players.LocalPlayer
+local mouse = player:GetMouse()
+local runService = game:GetService("RunService")
+local teleportPos = Vector3.new(424.4, 27.5, 49040.5)
+local flySpeed = 100
 local flying = false
-local function flyFunc()
-	flying = not flying
-	local char = LocalPlayer.Character
-	local hrp = char:FindFirstChild("HumanoidRootPart")
+local flyLoop
 
-	local bv = Instance.new("BodyVelocity")
-	bv.Velocity = Vector3.new(0, 0, 0)
-	bv.MaxForce = Vector3.new(400000, 400000, 400000)
-	bv.Parent = hrp
-
-	while flying and hrp and hrp.Parent do
-		wait()
-		bv.Velocity = (Mouse.Hit.Position - hrp.Position).Unit * 80
-	end
-
-	bv:Destroy()
+-- Função: Teleportar para posição fixa (auto fim)
+local function teleportToEnd()
+    local character = player.Character
+    if character and character:FindFirstChild("HumanoidRootPart") then
+        character.HumanoidRootPart.CFrame = CFrame.new(teleportPos)
+    end
 end
 
-local function invisibleFunc()
-	for _, part in pairs(LocalPlayer.Character:GetDescendants()) do
-		if part:IsA("BasePart") and part.Name ~= "HumanoidRootPart" then
-			part.Transparency = 1
-		elseif part:IsA("Decal") then
-			part.Transparency = 1
-		end
-	end
+-- Função: Fly (voar)
+local function toggleFly()
+    flying = not flying
+    local character = player.Character
+    local hrp = character and character:FindFirstChild("HumanoidRootPart")
+    if not hrp then return end
+
+    if flying then
+        flyLoop = runService.Heartbeat:Connect(function()
+            local cam = workspace.CurrentCamera
+            local lookVector = cam.CFrame.LookVector
+            hrp.Velocity = lookVector * flySpeed
+        end)
+    else
+        if flyLoop then
+            flyLoop:Disconnect()
+            flyLoop = nil
+        end
+        hrp.Velocity = Vector3.new(0, 0, 0)
+    end
 end
 
-local function autoEndFunc()
-	for _, obj in pairs(workspace:GetDescendants()) do
-		if obj:IsA("TouchTransmitter") then
-			firetouchinterest(LocalPlayer.Character.HumanoidRootPart, obj.Parent, 0)
-			firetouchinterest(LocalPlayer.Character.HumanoidRootPart, obj.Parent, 1)
-		end
-	end
+-- Função: Mostrar posição atual
+local function showPosition()
+    local character = player.Character
+    if character and character:FindFirstChild("HumanoidRootPart") then
+        local pos = character.HumanoidRootPart.Position
+        print(string.format("Sua posição atual: X=%.2f Y=%.2f Z=%.2f", pos.X, pos.Y, pos.Z))
+    else
+        print("Personagem não encontrado.")
+    end
 end
 
-local function aimbotFunc()
-	local camera = workspace.CurrentCamera
-	local closest, dist = nil, math.huge
-	for _, player in pairs(Players:GetPlayers()) do
-		if player ~= LocalPlayer and player.Character and player.Character:FindFirstChild("Head") then
-			local headPos = player.Character.Head.Position
-			local screenPos = camera:WorldToViewportPoint(headPos)
-			local mag = (Vector2.new(Mouse.X, Mouse.Y) - Vector2.new(screenPos.X, screenPos.Y)).magnitude
-			if mag < dist then
-				dist = mag
-				closest = player
-			end
-		end
-	end
-	if closest and closest.Character:FindFirstChild("Head") then
-		camera.CFrame = CFrame.new(camera.CFrame.Position, closest.Character.Head.Position)
-	end
+-- Função: Auto Collect Bonds (exemplo básico)
+local collecting = false
+local collectLoop
+local function toggleAutoCollect()
+    collecting = not collecting
+    if collecting then
+        collectLoop = runService.Heartbeat:Connect(function()
+            -- Exemplo: coletar itens chamados "Bond" no workspace
+            for _, item in pairs(workspace:GetChildren()) do
+                if item.Name == "Bond" and item:IsA("BasePart") then
+                    local hrp = player.Character and player.Character:FindFirstChild("HumanoidRootPart")
+                    if hrp then
+                        item.CFrame = hrp.CFrame -- "puxa" o bond para o player
+                    end
+                end
+            end
+        end)
+    else
+        if collectLoop then
+            collectLoop:Disconnect()
+            collectLoop = nil
+        end
+    end
 end
 
--- Botões de funcionalidade
-local btn1 = CreateButton("FLY (F)", UDim2.new(0.1, 0, 0.25, 0), flyFunc)
-local btn2 = CreateButton("Invisível", UDim2.new(0.1, 0, 0.45, 0), invisibleFunc)
-local btn3 = CreateButton("Auto End", UDim2.new(0.55, 0, 0.25, 0), autoEndFunc)
-local btn4 = CreateButton("Aimbot", UDim2.new(0.55, 0, 0.45, 0), aimbotFunc)
+-- Criando os botões da GUI
+local btnTeleport = createButton("Teleportar para Final", 60)
+btnTeleport.MouseButton1Click:Connect(teleportToEnd)
 
--- Minimizar
-MinimizeBtn.MouseButton1Click:Connect(function()
-	MainFrame.Visible = false
-	MaximizeBtn.Visible = true
-end)
+local btnFly = createButton("Toggle Fly", 110)
+btnFly.MouseButton1Click:Connect(toggleFly)
 
--- Maximizar
-MaximizeBtn.MouseButton1Click:Connect(function()
-	MainFrame.Visible = true
-	MaximizeBtn.Visible = false
-end)
+local btnShowPos = createButton("Mostrar Posição", 160)
+btnShowPos.MouseButton1Click:Connect(showPosition)
 
--- Tecla F = Ativa o Fly
-Mouse.KeyDown:Connect(function(k)
-	if k:lower() == "f" then
-		flyFunc()
-	end
-end)
+local btnAutoCollect = createButton("Toggle Auto Coletar Bonds", 210)
+btnAutoCollect.MouseButton1Click:Connect(toggleAutoCollect)
+
+-- Finalizando interface
+local footer = Instance.new("TextLabel")
+footer.Size = UDim2.new(1, 0, 0, 20)
+footer.Position = UDim2.new(0, 0, 1, -20)
+footer.BackgroundTransparency = 1
+footer.Text = "By Yuri - YZHUB"
+footer.TextColor3 = Color3.fromRGB(0, 170, 255)
+footer.Font = Enum.Font.Gotham
+footer.TextSize = 14
+footer.Parent = mainFrame
