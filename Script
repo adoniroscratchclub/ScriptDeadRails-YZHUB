@@ -1,4 +1,4 @@
--- YZHUB com AUTO FIM + FLY RÁPIDO
+-- YZHUB: AUTO FIM + FLY + INVISIBILIDADE
 local player = game.Players.LocalPlayer
 local char = player.Character or player.CharacterAdded:Wait()
 local root = char:WaitForChild("HumanoidRootPart")
@@ -6,16 +6,16 @@ local root = char:WaitForChild("HumanoidRootPart")
 -- Criar GUI
 local gui = Instance.new("ScreenGui", game.CoreGui)
 local frame = Instance.new("Frame", gui)
-frame.Size = UDim2.new(0, 150, 0, 120)
+frame.Size = UDim2.new(0, 150, 0, 180) -- altura aumentada
 frame.Position = UDim2.new(0, 20, 0, 100)
 frame.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
 frame.BorderSizePixel = 0
 frame.Active = true
 frame.Draggable = true
 
--- Botão Auto Fim
+-- Botão AUTO FIM
 local btn1 = Instance.new("TextButton", frame)
-btn1.Size = UDim2.new(1, 0, 0.5, 0)
+btn1.Size = UDim2.new(1, 0, 0.333, 0)
 btn1.Position = UDim2.new(0, 0, 0, 0)
 btn1.Text = "AUTO FIM"
 btn1.BackgroundColor3 = Color3.fromRGB(0, 170, 255)
@@ -27,19 +27,18 @@ btn1.MouseButton1Click:Connect(function()
     root.CFrame = root.CFrame + root.CFrame.lookVector * 500
 end)
 
--- Botão Fly
+-- Botão FLY
 local btn2 = Instance.new("TextButton", frame)
-btn2.Size = UDim2.new(1, 0, 0.5, 0)
-btn2.Position = UDim2.new(0, 0, 0.5, 0)
+btn2.Size = UDim2.new(1, 0, 0.333, 0)
+btn2.Position = UDim2.new(0, 0, 0.333, 0)
 btn2.Text = "FLY: OFF"
-btn2.BackgroundColor3 = Color3.fromRGB(0, 200, 100)
+btn2.BackgroundColor3 = Color3.fromRGB(255, 100, 0)
 btn2.TextColor3 = Color3.fromRGB(255, 255, 255)
 btn2.Font = Enum.Font.SourceSansBold
 btn2.TextSize = 20
 
--- Script de voo
 local flying = false
-local speed = 150  -- 🚀 Fly super rápido
+local speed = 300 -- velocidade turbo
 
 btn2.MouseButton1Click:Connect(function()
     flying = not flying
@@ -56,11 +55,41 @@ btn2.MouseButton1Click:Connect(function()
 
     spawn(function()
         while flying do
-            wait()
+            task.wait()
             bodyGyro.cframe = workspace.CurrentCamera.CFrame
             bodyVelocity.velocity = workspace.CurrentCamera.CFrame.lookVector * speed
         end
         bodyGyro:Destroy()
         bodyVelocity:Destroy()
     end)
+end)
+
+-- Botão INVISIBILIDADE
+local btn3 = Instance.new("TextButton", frame)
+btn3.Size = UDim2.new(1, 0, 0.334, 0)
+btn3.Position = UDim2.new(0, 0, 0.666, 0)
+btn3.Text = "INVISIVEL: OFF"
+btn3.BackgroundColor3 = Color3.fromRGB(150, 0, 255)
+btn3.TextColor3 = Color3.fromRGB(255, 255, 255)
+btn3.Font = Enum.Font.SourceSansBold
+btn3.TextSize = 20
+
+local invis = false
+
+btn3.MouseButton1Click:Connect(function()
+    invis = not invis
+    btn3.Text = invis and "INVISIVEL: ON" or "INVISIVEL: OFF"
+
+    for _, part in ipairs(char:GetDescendants()) do
+        if part:IsA("BasePart") and part.Name ~= "HumanoidRootPart" then
+            part.Transparency = invis and 1 or 0
+            if part:FindFirstChild("face") then
+                part.face.Transparency = invis and 1 or 0
+            end
+        elseif part:IsA("Decal") then
+            part.Transparency = invis and 1 or 0
+        elseif part:IsA("Accessory") and part:FindFirstChild("Handle") then
+            part.Handle.Transparency = invis and 1 or 0
+        end
+    end
 end)
