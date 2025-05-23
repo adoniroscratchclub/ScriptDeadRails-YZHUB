@@ -1,4 +1,4 @@
--- YZHUB: AUTO FIM + FLY + INVISIBILIDADE
+-- YZHUB: AUTO FIM + FLY + INVISIBILIDADE + POSIÇÃO
 local player = game.Players.LocalPlayer
 local char = player.Character or player.CharacterAdded:Wait()
 local root = char:WaitForChild("HumanoidRootPart")
@@ -6,7 +6,7 @@ local root = char:WaitForChild("HumanoidRootPart")
 -- Criar GUI
 local gui = Instance.new("ScreenGui", game.CoreGui)
 local frame = Instance.new("Frame", gui)
-frame.Size = UDim2.new(0, 150, 0, 180) -- altura aumentada
+frame.Size = UDim2.new(0, 150, 0, 240) -- altura aumentada pra 4 botões
 frame.Position = UDim2.new(0, 20, 0, 100)
 frame.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
 frame.BorderSizePixel = 0
@@ -15,7 +15,7 @@ frame.Draggable = true
 
 -- Botão AUTO FIM
 local btn1 = Instance.new("TextButton", frame)
-btn1.Size = UDim2.new(1, 0, 0.333, 0)
+btn1.Size = UDim2.new(1, 0, 0.25, 0)
 btn1.Position = UDim2.new(0, 0, 0, 0)
 btn1.Text = "AUTO FIM"
 btn1.BackgroundColor3 = Color3.fromRGB(0, 170, 255)
@@ -29,8 +29,8 @@ end)
 
 -- Botão FLY
 local btn2 = Instance.new("TextButton", frame)
-btn2.Size = UDim2.new(1, 0, 0.333, 0)
-btn2.Position = UDim2.new(0, 0, 0.333, 0)
+btn2.Size = UDim2.new(1, 0, 0.25, 0)
+btn2.Position = UDim2.new(0, 0, 0.25, 0)
 btn2.Text = "FLY: OFF"
 btn2.BackgroundColor3 = Color3.fromRGB(255, 100, 0)
 btn2.TextColor3 = Color3.fromRGB(255, 255, 255)
@@ -66,8 +66,8 @@ end)
 
 -- Botão INVISIBILIDADE
 local btn3 = Instance.new("TextButton", frame)
-btn3.Size = UDim2.new(1, 0, 0.334, 0)
-btn3.Position = UDim2.new(0, 0, 0.666, 0)
+btn3.Size = UDim2.new(1, 0, 0.25, 0)
+btn3.Position = UDim2.new(0, 0, 0.5, 0)
 btn3.Text = "INVISIVEL: OFF"
 btn3.BackgroundColor3 = Color3.fromRGB(150, 0, 255)
 btn3.TextColor3 = Color3.fromRGB(255, 255, 255)
@@ -90,6 +90,55 @@ btn3.MouseButton1Click:Connect(function()
             part.Transparency = invis and 1 or 0
         elseif part:IsA("Accessory") and part:FindFirstChild("Handle") then
             part.Handle.Transparency = invis and 1 or 0
+        end
+    end
+end)
+
+-- Botão POSIÇÃO
+local btn4 = Instance.new("TextButton", frame)
+btn4.Size = UDim2.new(1, 0, 0.25, 0)
+btn4.Position = UDim2.new(0, 0, 0.75, 0)
+btn4.Text = "POSIÇÃO: OFF"
+btn4.BackgroundColor3 = Color3.fromRGB(0, 200, 0)
+btn4.TextColor3 = Color3.fromRGB(255, 255, 255)
+btn4.Font = Enum.Font.SourceSansBold
+btn4.TextSize = 20
+
+local showingPos = false
+local posLabel
+
+btn4.MouseButton1Click:Connect(function()
+    showingPos = not showingPos
+    btn4.Text = showingPos and "POSIÇÃO: ON" or "POSIÇÃO: OFF"
+
+    if showingPos then
+        posLabel = Instance.new("TextLabel", gui)
+        posLabel.Size = UDim2.new(0, 200, 0, 40)
+        posLabel.Position = UDim2.new(0, 20, 0, 50)
+        posLabel.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+        posLabel.BackgroundTransparency = 0.5
+        posLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+        posLabel.Font = Enum.Font.SourceSansBold
+        posLabel.TextSize = 18
+        posLabel.Text = "Posição: Loading..."
+
+        -- Atualizar posição a cada frame
+        local conn
+        conn = game:GetService("RunService").RenderStepped:Connect(function()
+            if not showingPos then
+                conn:Disconnect()
+                posLabel:Destroy()
+                return
+            end
+            if root then
+                local pos = root.Position
+                posLabel.Text = string.format("Posição: X=%.1f Y=%.1f Z=%.1f", pos.X, pos.Y, pos.Z)
+            end
+        end)
+    else
+        if posLabel then
+            posLabel:Destroy()
+            posLabel = nil
         end
     end
 end)
