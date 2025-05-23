@@ -1,146 +1,63 @@
--- YZHUB: AUTO FIM + FLY + INVISIBILIDADE + POSIÇÃO (sem retorno automático)
-local player = game.Players.LocalPlayer
-local char = player.Character or player.CharacterAdded:Wait()
-local root = char:WaitForChild("HumanoidRootPart")
+-- YZHub | Clonado e estilizado por Yuri 😎
+-- Interface personalizada + funcionalidades populares do NatHub
 
--- Criar GUI
-local gui = Instance.new("ScreenGui", game.CoreGui)
-local frame = Instance.new("Frame", gui)
-frame.Size = UDim2.new(0, 150, 0, 240) -- altura para 4 botões
-frame.Position = UDim2.new(0, 20, 0, 100)
-frame.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
-frame.BorderSizePixel = 0
-frame.Active = true
-frame.Draggable = true
+local ScreenGui = Instance.new("ScreenGui")
+local MainFrame = Instance.new("Frame")
+local Title = Instance.new("TextLabel")
+local AutoWinButton = Instance.new("TextButton")
+local AimbotButton = Instance.new("TextButton")
 
--- Botão AUTO FIM (teleportar para posição fixa)
-local btn1 = Instance.new("TextButton", frame)
-btn1.Size = UDim2.new(1, 0, 0.25, 0)
-btn1.Position = UDim2.new(0, 0, 0, 0)
-btn1.Text = "AUTO FIM"
-btn1.BackgroundColor3 = Color3.fromRGB(0, 170, 255)
-btn1.TextColor3 = Color3.fromRGB(255, 255, 255)
-btn1.Font = Enum.Font.SourceSansBold
-btn1.TextSize = 20
+-- Configuração básica da GUI
+ScreenGui.Name = "YZHub"
+ScreenGui.Parent = game.CoreGui
 
-btn1.MouseButton1Click:Connect(function()
-    root.CFrame = CFrame.new(424.4, 27.5, 49040.5)
-end)
+MainFrame.Name = "MainFrame"
+MainFrame.Parent = ScreenGui
+MainFrame.BackgroundColor3 = Color3.fromRGB(10, 10, 10)
+MainFrame.Position = UDim2.new(0.3, 0, 0.3, 0)
+MainFrame.Size = UDim2.new(0, 320, 0, 220)
+MainFrame.BorderSizePixel = 0
 
--- Botão FLY (liga/desliga fly, sem retorno)
-local btn2 = Instance.new("TextButton", frame)
-btn2.Size = UDim2.new(1, 0, 0.25, 0)
-btn2.Position = UDim2.new(0, 0, 0.25, 0)
-btn2.Text = "FLY: OFF"
-btn2.BackgroundColor3 = Color3.fromRGB(255, 100, 0)
-btn2.TextColor3 = Color3.fromRGB(255, 255, 255)
-btn2.Font = Enum.Font.SourceSansBold
-btn2.TextSize = 20
+Title.Name = "Title"
+Title.Parent = MainFrame
+Title.BackgroundColor3 = Color3.fromRGB(0, 170, 255)
+Title.Size = UDim2.new(1, 0, 0, 40)
+Title.Font = Enum.Font.GothamBold
+Title.Text = "YZHub - Dead Rails"
+Title.TextColor3 = Color3.fromRGB(255, 255, 255)
+Title.TextSize = 24
 
-local flying = false
-local speed = 300 -- velocidade turbo
-local bodyGyro, bodyVelocity
-local flyConnection
-
-btn2.MouseButton1Click:Connect(function()
-    flying = not flying
-    btn2.Text = flying and "FLY: ON" or "FLY: OFF"
-
-    if flying then
-        bodyGyro = Instance.new("BodyGyro", root)
-        bodyGyro.P = 9e4
-        bodyGyro.maxTorque = Vector3.new(9e9, 9e9, 9e9)
-        bodyGyro.cframe = root.CFrame
-
-        bodyVelocity = Instance.new("BodyVelocity", root)
-        bodyVelocity.velocity = Vector3.new(0, 0, 0)
-        bodyVelocity.maxForce = Vector3.new(9e9, 9e9, 9e9)
-
-        flyConnection = game:GetService("RunService").RenderStepped:Connect(function()
-            bodyGyro.cframe = workspace.CurrentCamera.CFrame
-            bodyVelocity.velocity = workspace.CurrentCamera.CFrame.lookVector * speed
-        end)
-    else
-        if flyConnection then flyConnection:Disconnect() end
-        if bodyGyro then bodyGyro:Destroy() end
-        if bodyVelocity then bodyVelocity:Destroy() end
-    end
-end)
-
--- Botão INVISIBILIDADE
-local btn3 = Instance.new("TextButton", frame)
-btn3.Size = UDim2.new(1, 0, 0.25, 0)
-btn3.Position = UDim2.new(0, 0, 0.5, 0)
-btn3.Text = "INVISIVEL: OFF"
-btn3.BackgroundColor3 = Color3.fromRGB(150, 0, 255)
-btn3.TextColor3 = Color3.fromRGB(255, 255, 255)
-btn3.Font = Enum.Font.SourceSansBold
-btn3.TextSize = 20
-
-local invis = false
-
-btn3.MouseButton1Click:Connect(function()
-    invis = not invis
-    btn3.Text = invis and "INVISIVEL: ON" or "INVISIVEL: OFF"
-
-    for _, part in ipairs(char:GetDescendants()) do
-        if part:IsA("BasePart") and part.Name ~= "HumanoidRootPart" then
-            part.Transparency = invis and 1 or 0
-            if part:FindFirstChild("face") then
-                part.face.Transparency = invis and 1 or 0
-            end
-        elseif part:IsA("Decal") then
-            part.Transparency = invis and 1 or 0
-        elseif part:IsA("Accessory") and part:FindFirstChild("Handle") then
-            part.Handle.Transparency = invis and 1 or 0
+-- Botão Auto Win
+AutoWinButton.Name = "AutoWin"
+AutoWinButton.Parent = MainFrame
+AutoWinButton.BackgroundColor3 = Color3.fromRGB(0, 170, 255)
+AutoWinButton.Position = UDim2.new(0.1, 0, 0.3, 0)
+AutoWinButton.Size = UDim2.new(0, 120, 0, 40)
+AutoWinButton.Font = Enum.Font.Gotham
+AutoWinButton.Text = "Auto Win"
+AutoWinButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+AutoWinButton.TextSize = 16
+AutoWinButton.MouseButton1Click:Connect(function()
+    -- Exemplo de funcionalidade
+    for _, v in pairs(workspace:GetDescendants()) do
+        if v:IsA("TouchTransmitter") and v.Parent then
+            firetouchinterest(game.Players.LocalPlayer.Character.HumanoidRootPart, v.Parent, 0)
+            firetouchinterest(game.Players.LocalPlayer.Character.HumanoidRootPart, v.Parent, 1)
         end
     end
 end)
 
--- Botão POSIÇÃO
-local btn4 = Instance.new("TextButton", frame)
-btn4.Size = UDim2.new(1, 0, 0.25, 0)
-btn4.Position = UDim2.new(0, 0, 0.75, 0)
-btn4.Text = "POSIÇÃO: OFF"
-btn4.BackgroundColor3 = Color3.fromRGB(0, 200, 0)
-btn4.TextColor3 = Color3.fromRGB(255, 255, 255)
-btn4.Font = Enum.Font.SourceSansBold
-btn4.TextSize = 20
-
-local showingPos = false
-local posLabel
-
-btn4.MouseButton1Click:Connect(function()
-    showingPos = not showingPos
-    btn4.Text = showingPos and "POSIÇÃO: ON" or "POSIÇÃO: OFF"
-
-    if showingPos then
-        posLabel = Instance.new("TextLabel", gui)
-        posLabel.Size = UDim2.new(0, 200, 0, 40)
-        posLabel.Position = UDim2.new(0, 20, 0, 50)
-        posLabel.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
-        posLabel.BackgroundTransparency = 0.5
-        posLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
-        posLabel.Font = Enum.Font.SourceSansBold
-        posLabel.TextSize = 18
-        posLabel.Text = "Posição: Loading..."
-
-        local conn
-        conn = game:GetService("RunService").RenderStepped:Connect(function()
-            if not showingPos then
-                conn:Disconnect()
-                posLabel:Destroy()
-                return
-            end
-            if root then
-                local pos = root.Position
-                posLabel.Text = string.format("Posição: X=%.1f Y=%.1f Z=%.1f", pos.X, pos.Y, pos.Z)
-            end
-        end)
-    else
-        if posLabel then
-            posLabel:Destroy()
-            posLabel = nil
-        end
-    end
+-- Botão Aimbot (simples)
+AimbotButton.Name = "Aimbot"
+AimbotButton.Parent = MainFrame
+AimbotButton.BackgroundColor3 = Color3.fromRGB(0, 170, 255)
+AimbotButton.Position = UDim2.new(0.5, 10, 0.3, 0)
+AimbotButton.Size = UDim2.new(0, 120, 0, 40)
+AimbotButton.Font = Enum.Font.Gotham
+AimbotButton.Text = "Aimbot"
+AimbotButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+AimbotButton.TextSize = 16
+AimbotButton.MouseButton1Click:Connect(function()
+    print("Aimbot ativado (placeholder)")
+    -- Aimbot real exigiria hooks e lógica de alvo
 end)
